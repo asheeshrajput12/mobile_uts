@@ -1,5 +1,7 @@
 [versions]
+accompanistPager = "0.31.2-alpha"
 agp = "8.7.0"
+foundation = "1.7.8"
 kotlin = "2.0.0"
 coreKtx = "1.15.0"
 junit = "4.13.2"
@@ -10,7 +12,9 @@ activityCompose = "1.9.3"
 composeBom = "2024.04.01"
 
 [libraries]
+accompanist-pager = { module = "com.google.accompanist:accompanist-pager", version.ref = "accompanistPager" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-foundation = { module = "androidx.compose.foundation:foundation", version.ref = "foundation" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
