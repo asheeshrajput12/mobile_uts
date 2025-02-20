@@ -1,9 +1,15 @@
 package com.asheeshk.uts
 
+import android.app.Activity
+import android.app.Activity.RESULT_OK
+import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -89,6 +95,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
@@ -394,6 +401,26 @@ fun NormalBooking() {
     var selectedOption by remember { mutableStateOf("") }
     var sourceStation by remember { mutableStateOf("New Delhi") }
     var destinationStation by remember { mutableStateOf("Kanpur Central") }
+    val context= LocalContext.current
+
+    // Register Activity Result Launcher
+    val stationLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            val selectedStation = result.data?.getStringExtra("station")
+            val type = result.data?.getIntExtra("type",0)
+            selectedStation?.let {
+                Toast.makeText(context, "Selected Station: $it", Toast.LENGTH_SHORT).show()
+                if(type==0){
+                    sourceStation=it
+                }else{
+                    destinationStation=it
+                }
+                // Handle the selected station (e.g., update state or save)
+            }
+        }
+    }
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -530,7 +557,10 @@ fun NormalBooking() {
                                 .fillMaxWidth()
                                 .align(Alignment.CenterVertically)
                                 .clickable {
-
+                                    val intent=Intent(context,ActivityStation::class.java).apply {
+                                        putExtra("type",0)
+                                    }
+                                    stationLauncher.launch(intent)
                                 }
                         ) {
                             Text(
@@ -600,7 +630,10 @@ fun NormalBooking() {
                     Row(modifier = Modifier
                         .weight(1f)
                         .clickable {
-
+                            val intent=Intent(context,ActivityStation::class.java).apply {
+                                putExtra("type",1)
+                            }
+                            stationLauncher.launch(intent)
                         }) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
