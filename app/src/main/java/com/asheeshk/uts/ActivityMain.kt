@@ -81,6 +81,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCompositionContext
@@ -104,10 +105,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.asheeshk.uts.databse.ActivityTableList
 import com.asheeshk.uts.ui.theme.ActivityLoginTheme
 import com.asheeshk.uts.ui.theme.colorPrimary
 import com.asheeshk.uts.ui.theme.colorPrimaryDark
 import com.asheeshk.uts.ui.theme.colorRed
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 
@@ -128,6 +131,12 @@ class ActivityMain : ComponentActivity() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen() {
+    val context= LocalContext.current
+    var tapCount by remember { mutableIntStateOf(0) }
+    val coroutineScope = rememberCoroutineScope()
+    if(tapCount==7){
+        Toast.makeText(context,"Developer Mode Enabled",Toast.LENGTH_SHORT)?.show()
+    }
     Scaffold(modifier = Modifier.fillMaxSize(),
         topBar = {
             TopAppBar(
@@ -136,7 +145,20 @@ fun MainScreen() {
                         Image(
                             painter = painterResource(R.drawable.ic_app_logo),
                             contentDescription = "",
-                            modifier = Modifier.size(70.dp),
+                            modifier = Modifier.size(50.dp).clickable {
+                                tapCount++
+                                if (tapCount == 7) {
+                                    // Open Developer Mode Activity
+                                    context.startActivity(Intent(context, ActivityTableList::class.java))
+                                    tapCount = 0 // Reset count after unlocking
+                                } else {
+                                    // Reset counter after 2 seconds of inactivity
+                                    coroutineScope.launch {
+                                        delay(4000)
+                                        tapCount = 0
+                                    }
+                                }
+                            },
                             contentScale = ContentScale.Fit
                         )
                         Column(
@@ -153,6 +175,7 @@ fun MainScreen() {
                                 textAlign = TextAlign.Start,
                                 text = "UTS",
                                 fontSize = 16.sp,
+                                maxLines = 1,
                                 fontWeight = FontWeight.W500,
                             )
                             Text(
@@ -224,7 +247,10 @@ fun MainScreen() {
                                 )
                             ), shape = CircleShape
                         )
-                        .padding(20.dp),
+                        .padding(20.dp).clickable {
+                           /* val intent=Intent(context,ActivityTableList::class.java)
+                            context.startActivity(intent)*/
+                        },
                     imageVector = Icons.Filled.Face, contentDescription = ""
                 )
             }
@@ -401,7 +427,7 @@ fun NormalBooking() {
     var selectedOption by remember { mutableStateOf("") }
     var sourceStation by remember { mutableStateOf("New Delhi") }
     var destinationStation by remember { mutableStateOf("Kanpur Central") }
-    val context= LocalContext.current
+    val context = LocalContext.current
 
     // Register Activity Result Launcher
     val stationLauncher = rememberLauncherForActivityResult(
@@ -409,13 +435,13 @@ fun NormalBooking() {
     ) { result ->
         if (result.resultCode == RESULT_OK) {
             val selectedStation = result.data?.getStringExtra("station")
-            val type = result.data?.getIntExtra("type",0)
+            val type = result.data?.getIntExtra("type", 0)
             selectedStation?.let {
                 Toast.makeText(context, "Selected Station: $it", Toast.LENGTH_SHORT).show()
-                if(type==0){
-                    sourceStation=it
-                }else{
-                    destinationStation=it
+                if (type == 0) {
+                    sourceStation = it
+                } else {
+                    destinationStation = it
                 }
                 // Handle the selected station (e.g., update state or save)
             }
@@ -476,7 +502,7 @@ fun NormalBooking() {
                             selected = (selectedOption == "Book & Travel(Paperless)"),
                             onClick = { selectedOption = "Book & Travel(Paperless)" }
                         )
-                        Text(text = "Book & Travel (Paperless)", fontSize = 10.sp)
+                        Text(text = "Book & Travel (Paperless)", maxLines = 1, fontSize = 10.sp)
                     }
                     // Mobile Login
                     Row(
@@ -497,7 +523,7 @@ fun NormalBooking() {
                             selected = (selectedOption == "Book & Print(Paper)"),
                             onClick = { selectedOption = "Book & Print(Paper)" }
                         )
-                        Text(text = "Book & Print (Paper)", fontSize = 10.sp)
+                        Text(text = "Book & Print (Paper)", maxLines = 1, fontSize = 10.sp)
                     }
                 }
                 Column(
@@ -557,9 +583,10 @@ fun NormalBooking() {
                                 .fillMaxWidth()
                                 .align(Alignment.CenterVertically)
                                 .clickable {
-                                    val intent=Intent(context,ActivityStation::class.java).apply {
-                                        putExtra("type",0)
-                                    }
+                                    val intent =
+                                        Intent(context, ActivityStation::class.java).apply {
+                                            putExtra("type", 0)
+                                        }
                                     stationLauncher.launch(intent)
                                 }
                         ) {
@@ -630,8 +657,8 @@ fun NormalBooking() {
                     Row(modifier = Modifier
                         .weight(1f)
                         .clickable {
-                            val intent=Intent(context,ActivityStation::class.java).apply {
-                                putExtra("type",1)
+                            val intent = Intent(context, ActivityStation::class.java).apply {
+                                putExtra("type", 1)
                             }
                             stationLauncher.launch(intent)
                         }) {

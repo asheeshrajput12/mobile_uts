@@ -2,4 +2,6 @@
     <string name="app_name">ActivityLogin</string>
     <string name="title_activity_activty_main">ActivtyMain</string>
     <string name="title_activity_station">ActivityStation</string>
+    <string name="title_activity_table_list">ActivityTableList</string>
+    <string name="title_activity_table_column">ActivityTableColumn</string>
 </resources>

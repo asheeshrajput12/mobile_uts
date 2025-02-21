@@ -13,17 +13,27 @@
         android:theme="@style/Theme.ActivityLogin"
         tools:targetApi="31">
         <activity
-            android:name="com.asheeshk.uts.ActivityStation"
+            android:name=".databse.ActivityTableColumn"
+            android:exported="false"
+            android:label="@string/title_activity_table_column"
+            android:theme="@style/Theme.ActivityLogin" />
+        <activity
+            android:name=".databse.ActivityTableList"
+            android:exported="false"
+            android:label="@string/title_activity_table_list"
+            android:theme="@style/Theme.ActivityLogin" />
+        <activity
+            android:name=".ActivityStation"
             android:exported="false"
             android:label="@string/title_activity_station"
             android:theme="@style/Theme.ActivityLogin" />
         <activity
-            android:name="com.asheeshk.uts.ActivityLogin"
+            android:name=".ActivityLogin"
             android:exported="false"
             android:label="@string/title_activity_activty_main"
             android:theme="@style/Theme.ActivityLogin" />
         <activity
-            android:name="com.asheeshk.uts.ActivityMain"
+            android:name=".ActivityMain"
             android:exported="true"
             android:label="UTS"
             android:theme="@style/Theme.ActivityLogin">
