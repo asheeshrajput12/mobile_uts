@@ -4,6 +4,8 @@ import android.app.Activity
 import android.app.Activity.RESULT_OK
 import android.content.Intent
 import android.os.Bundle
+import android.provider.Settings
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -58,6 +60,7 @@ import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Divider
@@ -80,7 +83,9 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -105,19 +110,24 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.work.WorkInfo
+import com.asheeshk.uts.common.CommonFunction
 import com.asheeshk.uts.databse.ActivityTableList
 import com.asheeshk.uts.ui.theme.ActivityLoginTheme
 import com.asheeshk.uts.ui.theme.colorPrimary
 import com.asheeshk.uts.ui.theme.colorPrimaryDark
 import com.asheeshk.uts.ui.theme.colorRed
+import com.google.android.gms.common.internal.service.Common
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 
 class ActivityMain : ComponentActivity() {
+
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         enableEdgeToEdge()
         setContent {
             ActivityLoginTheme {
@@ -134,6 +144,49 @@ fun MainScreen() {
     val context= LocalContext.current
     var tapCount by remember { mutableIntStateOf(0) }
     val coroutineScope = rememberCoroutineScope()
+    var showDialog by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("") }
+    val workInfoLiveData = CommonFunction().startLocationWorker(context)
+
+    // Convert LiveData to State
+    val workInfo by workInfoLiveData.observeAsState()
+
+    LaunchedEffect(workInfo) {
+        workInfo?.let {
+            if (it.state == WorkInfo.State.SUCCEEDED) {
+                val latitude = it.outputData.getDouble("latitude", 0.0)
+                val longitude = it.outputData.getDouble("longitude", 0.0)
+                Log.d("LocationActivity", "Received location: Lat=$latitude, Lng=$longitude")
+            } else if (it.state == WorkInfo.State.FAILED) {
+                errorMessage = it.outputData.getString("error") ?: "Unknown error"
+                showDialog = true
+            }
+        }
+    }
+    // ✅ Show Dialog if Needed
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text("Location Error") },
+            text = { Text(errorMessage) },
+            confirmButton = {
+                Button(onClick = {
+                    showDialog = false
+                    // Optionally, open settings
+                    val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+                    context.startActivity(intent)
+                }) {
+                    Text("Enable Location")
+                }
+            },
+            dismissButton = {
+                Button(onClick = { showDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
     if(tapCount==7){
         Toast.makeText(context,"Developer Mode Enabled",Toast.LENGTH_SHORT)?.show()
     }
